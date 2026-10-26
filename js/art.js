@@ -955,101 +955,227 @@
     ctx.restore();
   }
 
+  /** 向日葵花瓣：从花盘边缘向外生长的圆头花瓣（本地坐标，沿 -y 方向） */
+  function sunPetal(ctx, ang, r0, r1, w, c1, c2) {
+    ctx.save();
+    ctx.rotate(ang);
+    const g = ctx.createLinearGradient(0, -r0, 0, -r1);
+    g.addColorStop(0, c1);
+    g.addColorStop(1, c2);
+    const mid = r0 + (r1 - r0) * 0.55;
+    ctx.beginPath();
+    ctx.moveTo(0, -r0 + 1);
+    ctx.bezierCurveTo(-w, -mid + 4, -w * 0.92, -r1 + 3, 0, -r1);
+    ctx.bezierCurveTo(w * 0.92, -r1 + 3, w, -mid + 4, 0, -r0 + 1);
+    ctx.closePath();
+    ctx.fillStyle = g;
+    ctx.fill();
+    ctx.strokeStyle = OUT;
+    ctx.lineWidth = 1.9;
+    ctx.stroke();
+    ctx.restore();
+  }
+
   function pSunflower(ctx, o) {
     const t = o.t || 0;
     const hp = o.hpRatio == null ? 1 : o.hpRatio;
     const low = hp < 0.6;
-    groundShadow(ctx, 30);
-    // 茎与叶
-    stem(ctx, 0, -3, 3, -28, 0, -76, 7, '#5aa833');
-    leaf(ctx, -2, -20, 27, 13, -2.55, '#5fae3a');
-    leaf(ctx, 2, -26, 24, 12, -0.5, '#68b843');
-    // 花盘
-    const sway = Math.sin(t * 1.5) * 0.05 + (low ? 0.12 : 0);
+    const panic = hp < 0.3;
+    const sway = Math.sin(t * 1.35) * 0.045 + (low ? 0.13 : 0);
+    const breathe = 1 + Math.sin(t * 1.35 + 0.7) * 0.012;
+
+    groundShadow(ctx, 34, 0.22);
+    // 根部草叶
+    leaf(ctx, -9, -3, 15, 6, -0.12, '#4f9c31');
+    leaf(ctx, 10, -3, 14, 5, 0.08, '#5fb137');
+
+    // 茎与高光
+    stem(ctx, 0, -4, 5, -42, 0, -78, 8, '#55a52f');
     ctx.save();
-    ctx.translate(0, -64);
-    ctx.rotate(sway);
-    // 花瓣
-    for (let i = 0; i < 12; i++) {
-      ctx.save();
-      ctx.rotate((i / 12) * TAU);
-      ctx.beginPath();
-      ctx.ellipse(0, -33, 10.5, 16, 0, 0, TAU);
-      const pg = ctx.createLinearGradient(0, -48, 0, -18);
-      pg.addColorStop(0, '#ffe46b');
-      pg.addColorStop(1, '#f7b52c');
-      ctx.fillStyle = pg;
-      ctx.fill();
-      ctx.strokeStyle = '#c98a17';
-      ctx.lineWidth = 2;
-      ctx.stroke();
-      ctx.restore();
-    }
-    // 花心
-    const core = ctx.createRadialGradient(-6, -34, 4, 0, -30, 24);
-    core.addColorStop(0, '#f2b34a');
-    core.addColorStop(1, '#c97b2a');
     ctx.beginPath();
-    ctx.arc(0, -30, 21, 0, TAU);
-    ctx.fillStyle = core;
+    ctx.moveTo(-2.5, -8);
+    ctx.quadraticCurveTo(2.5, -44, -1.5, -74);
+    ctx.strokeStyle = 'rgba(190, 235, 130, 0.55)';
+    ctx.lineWidth = 2.4;
+    ctx.lineCap = 'round';
+    ctx.stroke();
+    ctx.restore();
+
+    // 三片大叶子
+    leaf(ctx, -3, -22, 34, 15, -2.62, '#58a832', 'rgba(30, 75, 15, 0.55)');
+    leaf(ctx, 3, -36, 30, 13, -0.48, '#68bd3e', 'rgba(30, 75, 15, 0.5)');
+    leaf(ctx, -2, -14, 22, 9, -2.95, '#4a942c');
+
+    // 头部
+    ctx.save();
+    ctx.translate(0, -80);
+    ctx.rotate(sway);
+    ctx.scale(breathe, breathe);
+
+    // 花瓣后的暖光晕
+    const halo = ctx.createRadialGradient(0, 0, 14, 0, 0, 48);
+    halo.addColorStop(0, 'rgba(255, 232, 130, 0.3)');
+    halo.addColorStop(0.62, 'rgba(255, 222, 110, 0.1)');
+    halo.addColorStop(1, 'rgba(255, 222, 110, 0)');
+    ctx.beginPath();
+    ctx.arc(0, 0, 48, 0, TAU);
+    ctx.fillStyle = halo;
+    ctx.fill();
+
+    // 后层花瓣（深金，稍长；长度和颜色带一点自然差异）
+    for (let i = 0; i < 14; i++) {
+      const a = (i / 14) * TAU + Math.PI / 14;
+      const len = 45.5 + Math.sin(i * 2.3) * 2.2;
+      sunPetal(ctx, a, 19, len, 9.4, '#dd9824', i % 2 ? '#f2ba46' : '#f6c352');
+    }
+    // 前层花瓣（亮黄，交错）
+    for (let i = 0; i < 14; i++) {
+      const a = (i / 14) * TAU;
+      const len = 40.5 + Math.cos(i * 2.7) * 2;
+      sunPetal(ctx, a, 17, len, 9, '#ffe066', i % 2 ? '#ffca35' : '#ffd84d');
+    }
+    // 花瓣基部阴影，压出层次
+    ctx.beginPath();
+    ctx.arc(0, 0, 27, 0, TAU);
+    ctx.fillStyle = 'rgba(160, 95, 10, 0.18)';
+    ctx.fill();
+
+    // 花盘
+    const discR = 22.5;
+    const dg = ctx.createRadialGradient(-7, -8, 3, 0, 0, discR + 2);
+    dg.addColorStop(0, '#8f5c2c');
+    dg.addColorStop(0.5, '#61391a');
+    dg.addColorStop(1, '#3a200b');
+    ctx.beginPath();
+    ctx.arc(0, 0, discR, 0, TAU);
+    ctx.fillStyle = dg;
     ctx.fill();
     ctx.strokeStyle = OUT;
-    ctx.lineWidth = 2.6;
+    ctx.lineWidth = 2.8;
     ctx.stroke();
-    // 花心纹理
+    // 花盘内圈
+    ctx.beginPath();
+    ctx.arc(0, 0, discR - 2.4, 0, TAU);
+    ctx.strokeStyle = 'rgba(255, 205, 120, 0.28)';
+    ctx.lineWidth = 1.6;
+    ctx.stroke();
+
+    // 葵花籽：黄金角螺旋
     ctx.save();
     ctx.beginPath();
-    ctx.arc(0, -30, 21, 0, TAU);
+    ctx.arc(0, 0, discR - 2, 0, TAU);
     ctx.clip();
-    ctx.fillStyle = 'rgba(90, 50, 15, 0.25)';
-    for (let i = 0; i < 14; i++) {
-      const a = i * 2.4;
-      const d = 5 + (i % 4) * 3.5;
+    for (let i = 0; i < 54; i++) {
+      // 只在外圈铺籽，给脸留出干净区域
+      const rad = 11.5 + Math.sqrt(i / 54) * (discR - 13.5);
+      const a = i * 2.399963;
+      const sx = Math.cos(a) * rad;
+      const sy = Math.sin(a) * rad;
       ctx.beginPath();
-      ctx.arc(Math.cos(a) * d, -30 + Math.sin(a) * d, 1.6, 0, TAU);
+      ctx.arc(sx, sy, i % 3 === 0 ? 1.4 : 0.95, 0, TAU);
+      ctx.fillStyle = i % 3 === 0 ? 'rgba(255, 214, 130, 0.5)' : 'rgba(28, 16, 6, 0.45)';
       ctx.fill();
     }
     ctx.restore();
+
     // 表情
-    if (low) {
-      // 难过：眉毛下垂、眼睛半闭
-      eye(ctx, -8, -34, 5.5, 5, -0.2);
-      eye(ctx, 8, -34, 5.5, 5, -0.2);
-      ctx.strokeStyle = '#5b3a15';
-      ctx.lineWidth = 2;
+    const blink = !low && (t % 4.3) < 0.13;
+    const eyeY = -3.5;
+    const look = low ? -0.35 : -0.12;
+    if (blink) {
+      ctx.strokeStyle = '#2f1a0a';
+      ctx.lineWidth = 2.4;
+      ctx.lineCap = 'round';
       ctx.beginPath();
-      ctx.moveTo(-14, -42); ctx.lineTo(-4, -39);
-      ctx.moveTo(14, -42); ctx.lineTo(4, -39);
+      ctx.arc(-10.5, eyeY + 2, 7.2, 0.15, Math.PI - 0.15);
       ctx.stroke();
       ctx.beginPath();
-      ctx.moveTo(-7, -19);
-      ctx.quadraticCurveTo(0, -25, 7, -19);
-      ctx.strokeStyle = '#6b4418';
-      ctx.lineWidth = 2.4;
+      ctx.arc(10.5, eyeY + 2, 7.2, 0.15, Math.PI - 0.15);
+      ctx.stroke();
+      // 睫毛
+      ctx.beginPath();
+      ctx.moveTo(-17, eyeY + 4);
+      ctx.lineTo(-19.5, eyeY + 1);
+      ctx.moveTo(17, eyeY + 4);
+      ctx.lineTo(19.5, eyeY + 1);
       ctx.stroke();
     } else {
-      eye(ctx, -8, -34, 6, 6.4, -0.1);
-      eye(ctx, 8, -34, 6, 6.4, -0.1);
-      // 腮红
-      ctx.fillStyle = 'rgba(226, 120, 80, 0.45)';
-      ctx.beginPath(); ctx.ellipse(-15, -24, 5, 3.4, 0, 0, TAU); ctx.fill();
-      ctx.beginPath(); ctx.ellipse(15, -24, 5, 3.4, 0, 0, TAU); ctx.fill();
-      // 笑
+      eye(ctx, -10.5, eyeY, 7.8, 8.8, look);
+      eye(ctx, 10.5, eyeY, 7.8, 8.8, look);
+      // 上眼睑（增加可爱度）
+      ctx.strokeStyle = 'rgba(60, 32, 10, 0.55)';
+      ctx.lineWidth = 1.8;
       ctx.beginPath();
-      ctx.moveTo(-8, -22);
-      ctx.quadraticCurveTo(0, -13, 8, -22);
-      ctx.strokeStyle = '#6b4418';
-      ctx.lineWidth = 2.6;
-      ctx.lineCap = 'round';
+      ctx.arc(-10.5, eyeY + 1, 8, Math.PI * 1.08, Math.PI * 1.92);
       ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(10.5, eyeY + 1, 8, Math.PI * 1.08, Math.PI * 1.92);
+      ctx.stroke();
+    }
+    // 眉毛
+    ctx.strokeStyle = '#4a2a10';
+    ctx.lineWidth = 2.2;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    if (panic) {
+      ctx.moveTo(-18, eyeY - 15); ctx.lineTo(-6, eyeY - 11);
+      ctx.moveTo(18, eyeY - 15); ctx.lineTo(6, eyeY - 11);
+    } else if (low) {
+      ctx.moveTo(-17, eyeY - 11); ctx.lineTo(-5, eyeY - 14);
+      ctx.moveTo(17, eyeY - 11); ctx.lineTo(5, eyeY - 14);
+    } else {
+      ctx.moveTo(-17, eyeY - 14);
+      ctx.quadraticCurveTo(-10, eyeY - 17, -4, eyeY - 15);
+      ctx.moveTo(17, eyeY - 14);
+      ctx.quadraticCurveTo(10, eyeY - 17, 4, eyeY - 15);
+    }
+    ctx.stroke();
+
+    // 腮红
+    ctx.fillStyle = 'rgba(232, 126, 86, 0.42)';
+    ctx.beginPath(); ctx.ellipse(-18, 7, 5.4, 3.2, -0.15, 0, TAU); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(18, 7, 5.4, 3.2, 0.15, 0, TAU); ctx.fill();
+
+    // 嘴巴
+    ctx.strokeStyle = '#3d2109';
+    ctx.lineWidth = 2.4;
+    ctx.beginPath();
+    if (panic) {
+      ctx.ellipse(0, 11, 4.6, 5.6, 0, 0, TAU);
+    } else if (low) {
+      ctx.moveTo(-7, 12);
+      ctx.quadraticCurveTo(0, 7.5, 7, 12);
+    } else {
+      ctx.moveTo(-7.5, 8.5);
+      ctx.quadraticCurveTo(0, 16.5, 7.5, 8.5);
+    }
+    ctx.stroke();
+    if (!low) {
+      // 小舌头
+      ctx.beginPath();
+      ctx.ellipse(0, 13.6, 3.1, 2.2, 0, 0, Math.PI);
+      ctx.fillStyle = 'rgba(232, 120, 100, 0.85)';
+      ctx.fill();
     }
     // 高光
     ctx.beginPath();
-    ctx.ellipse(-10, -42, 6, 3.4, -0.5, 0, TAU);
-    ctx.fillStyle = 'rgba(255,255,255,0.35)';
+    ctx.ellipse(-12, -14, 5.4, 2.8, -0.45, 0, TAU);
+    ctx.fillStyle = 'rgba(255, 226, 150, 0.35)';
     ctx.fill();
+
+    // 掉血时飘落的花粉
+    if (low) {
+      ctx.fillStyle = 'rgba(255, 220, 120, 0.6)';
+      for (let i = 0; i < 3; i++) {
+        const k = (t * 0.6 + i * 0.33) % 1;
+        ctx.beginPath();
+        ctx.arc(-26 + i * 9, 30 + k * 26, 1.6, 0, TAU);
+        ctx.fill();
+      }
+    }
     ctx.restore();
-    plantFlash(ctx, o.flash, 0, -64, 30, 28);
+
+    plantFlash(ctx, o.flash, 0, -80, 34, 32);
   }
 
   function peaHead(ctx, o, cfg) {

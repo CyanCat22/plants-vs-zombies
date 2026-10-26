@@ -97,9 +97,14 @@
       g.addColorStop(0, hover ? '#8a6a3f' : '#75552f');
       g.addColorStop(1, hover ? '#6a4d2a' : '#57401f');
     }
+    ctx.save();
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.35)';
+    ctx.shadowBlur = 14;
+    ctx.shadowOffsetY = 6;
     ctx.fillStyle = g;
     rr(ctx, rect.x, rect.y, rect.w, rect.h, opts.radius || 16);
     ctx.fill();
+    ctx.restore();
     ctx.strokeStyle = 'rgba(255, 240, 200, 0.55)';
     ctx.lineWidth = 2.5;
     rr(ctx, rect.x + 1.5, rect.y + 1.5, rect.w - 3, rect.h - 3, opts.radius || 16);
@@ -176,9 +181,19 @@
       ctx.save();
       ctx.translate(0, yOff);
 
-      // 卡底
+      // 卡底（带柔和投影，和草坪拉开层次）
+      if (!hy && !selected) {
+        ctx.save();
+        ctx.shadowColor = 'rgba(20, 14, 6, 0.35)';
+        ctx.shadowBlur = 8;
+        ctx.shadowOffsetY = 3;
+        ctx.fillStyle = 'rgba(70, 52, 28, 1)';
+        rr(ctx, r.x, r.y, r.w, r.h, 10);
+        ctx.fill();
+        ctx.restore();
+      }
       const g = ctx.createLinearGradient(0, r.y, 0, r.y + r.h);
-      g.addColorStop(0, '#f7ecc9');
+      g.addColorStop(0, selected ? '#fff6d8' : '#f7ecc9');
       g.addColorStop(1, '#e6d3a0');
       ctx.fillStyle = g;
       rr(ctx, r.x, r.y, r.w, r.h, 10);
@@ -200,11 +215,11 @@
       // 植物小像（缓存位图，避免每帧重绘 7 个角色）
       ctx.save();
       ctx.beginPath();
-      rr(ctx, r.x + 2, r.y + 2, r.w - 4, r.h - 30, 8);
+      rr(ctx, r.x + 2, r.y + 2, r.w - 4, r.h - 24, 8);
       ctx.clip();
       const icon = plantIcon(type);
-      const scl = 0.54;
-      ctx.drawImage(icon, r.x + r.w / 2 - 60 * scl, r.y + 68 - 138 * scl, 120 * scl, 150 * scl);
+      const scl = 0.5;
+      ctx.drawImage(icon, r.x + r.w / 2 - 60 * scl, r.y + 70 - 138 * scl, 120 * scl, 150 * scl);
       ctx.restore();
 
       // 冷却遮罩
@@ -221,12 +236,12 @@
         ctx.fill();
       }
 
-      // 阳光花费
+      // 阳光花费（图标 + 数字整体居中）
       ctx.save();
-      ctx.translate(r.x + 16, r.y + r.h - 14);
-      window.ART.drawSun(ctx, { t: 0, r: 9, glow: 0 });
+      ctx.translate(r.x + r.w / 2 - 15, r.y + r.h - 13);
+      window.ART.drawSun(ctx, { t: 0, r: 8.5, glow: 0 });
       ctx.restore();
-      text(ctx, String(def.cost), r.x + r.w / 2 + 8, r.y + r.h - 14, 16,
+      text(ctx, String(def.cost), r.x + r.w / 2 + 9, r.y + r.h - 13, 16,
         afford ? '#4a3417' : '#a03a2a', { weight: 800, outline: false });
 
       // 数字快捷键
@@ -465,12 +480,12 @@
 
     // 主角阵容
     ctx.save();
-    ctx.translate(300, 690);
+    ctx.translate(286, 690);
     ctx.scale(1.25, 1.25);
     window.ART.drawPlant(ctx, 'sunflower', { t, scale: 1, hpRatio: 1, state: 'idle', pop: 1, flash: 0 });
     ctx.restore();
     ctx.save();
-    ctx.translate(430, 700);
+    ctx.translate(414, 700);
     ctx.scale(1.3, 1.3);
     window.ART.drawPlant(ctx, 'peashooter', { t: t + 0.8, scale: 1, hpRatio: 1, state: 'idle', pop: 1, flash: 0 });
     ctx.restore();
@@ -491,6 +506,60 @@
     ctx.translate(L.W / 2, 190);
     ctx.rotate(sway);
     panel(ctx, -330, -96, 660, 190, { top: '#4a341c', bottom: '#2c1f10', border: '#d5a45e' });
+    // 木纹
+    ctx.save();
+    ctx.beginPath();
+    rr(ctx, -326, -92, 652, 182, 20);
+    ctx.clip();
+    for (let i = 0; i < 5; i++) {
+      const yy = -76 + i * 38;
+      ctx.beginPath();
+      ctx.moveTo(-330, yy);
+      ctx.bezierCurveTo(-120, yy + 5, 120, yy - 5, 330, yy);
+      ctx.strokeStyle = 'rgba(20, 12, 4, 0.22)';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(-330, yy + 3);
+      ctx.bezierCurveTo(-120, yy + 8, 120, yy - 2, 330, yy + 3);
+      ctx.strokeStyle = 'rgba(255, 220, 150, 0.07)';
+      ctx.lineWidth = 1.4;
+      ctx.stroke();
+    }
+    // 标题后的暖光
+    const glow = ctx.createRadialGradient(0, -18, 30, 0, -18, 300);
+    glow.addColorStop(0, 'rgba(190, 240, 120, 0.16)');
+    glow.addColorStop(0.55, 'rgba(190, 240, 120, 0.05)');
+    glow.addColorStop(1, 'rgba(190, 240, 120, 0)');
+    ctx.fillStyle = glow;
+    ctx.fillRect(-330, -96, 660, 190);
+    // 角落藤叶
+    [[-306, -74, -0.55, 1], [306, -74, Math.PI + 0.55, 1], [-306, 70, 0.5, 0.8], [306, 70, Math.PI - 0.5, 0.8]].forEach(([lx, ly, ang, sc]) => {
+      ctx.save();
+      ctx.translate(lx, ly);
+      ctx.rotate(ang);
+      ctx.scale(sc, sc);
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.quadraticCurveTo(13, -11, 30, -2);
+      ctx.quadraticCurveTo(13, 9, 0, 0);
+      const lg = ctx.createLinearGradient(0, -10, 30, 6);
+      lg.addColorStop(0, '#6fbf3f');
+      lg.addColorStop(1, '#3f7f22');
+      ctx.fillStyle = lg;
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(24, 40, 12, 0.8)';
+      ctx.lineWidth = 1.6;
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(3, 0);
+      ctx.lineTo(24, -1);
+      ctx.strokeStyle = 'rgba(30, 60, 15, 0.55)';
+      ctx.lineWidth = 1.2;
+      ctx.stroke();
+      ctx.restore();
+    });
+    ctx.restore();
     // 钉子
     [[-310, -76], [310, -76], [-310, 74], [310, 74]].forEach(([x, y]) => {
       ctx.fillStyle = '#d8c39a';
