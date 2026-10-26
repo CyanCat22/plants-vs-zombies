@@ -1043,9 +1043,9 @@
     // 花盘
     const discR = 22.5;
     const dg = ctx.createRadialGradient(-7, -8, 3, 0, 0, discR + 2);
-    dg.addColorStop(0, '#8f5c2c');
-    dg.addColorStop(0.5, '#61391a');
-    dg.addColorStop(1, '#3a200b');
+    dg.addColorStop(0, '#c58336');
+    dg.addColorStop(0.45, '#8a5222');
+    dg.addColorStop(1, '#4a290e');
     ctx.beginPath();
     ctx.arc(0, 0, discR, 0, TAU);
     ctx.fillStyle = dg;
@@ -1065,102 +1065,134 @@
     ctx.beginPath();
     ctx.arc(0, 0, discR - 2, 0, TAU);
     ctx.clip();
-    for (let i = 0; i < 54; i++) {
+    for (let i = 0; i < 40; i++) {
       // 只在外圈铺籽，给脸留出干净区域
-      const rad = 11.5 + Math.sqrt(i / 54) * (discR - 13.5);
+      const rad = 15.5 + Math.sqrt(i / 40) * (discR - 17.5);
       const a = i * 2.399963;
       const sx = Math.cos(a) * rad;
       const sy = Math.sin(a) * rad;
       ctx.beginPath();
       ctx.arc(sx, sy, i % 3 === 0 ? 1.4 : 0.95, 0, TAU);
-      ctx.fillStyle = i % 3 === 0 ? 'rgba(255, 214, 130, 0.5)' : 'rgba(28, 16, 6, 0.45)';
+      ctx.fillStyle = i % 3 === 0 ? 'rgba(255, 214, 130, 0.4)' : 'rgba(28, 16, 6, 0.32)';
       ctx.fill();
     }
     ctx.restore();
 
-    // 表情
-    const blink = !low && (t % 4.3) < 0.13;
-    const eyeY = -3.5;
-    const look = low ? -0.35 : -0.12;
+    // 表情（简洁卡通脸：小圆眼 + 高光 + 小张嘴，不再用眉毛和舌头）
+    const blink = !low && (t % 4.6) < 0.12;
+    const eyeY = -4.5;
+    const look = low ? 0.35 : 0.18;
+    const drawEye = (x, y, w, h, pr) => {
+      ctx.beginPath();
+      ctx.ellipse(x, y, w, h, 0, 0, TAU);
+      ctx.fillStyle = '#fff9e8';
+      ctx.fill();
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = '#4a2a10';
+      ctx.stroke();
+      const px = x;
+      const py = y + look * h * 0.45;
+      ctx.beginPath();
+      ctx.arc(px, py, pr, 0, TAU);
+      ctx.fillStyle = '#2a190b';
+      ctx.fill();
+      // 双高光
+      ctx.beginPath();
+      ctx.arc(px - w * 0.3, py - h * 0.3, w * 0.26, 0, TAU);
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(px + w * 0.24, py + h * 0.2, w * 0.13, 0, TAU);
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+      ctx.fill();
+    };
     if (blink) {
       ctx.strokeStyle = '#2f1a0a';
-      ctx.lineWidth = 2.4;
+      ctx.lineWidth = 2.2;
       ctx.lineCap = 'round';
       ctx.beginPath();
-      ctx.arc(-10.5, eyeY + 2, 7.2, 0.15, Math.PI - 0.15);
+      ctx.arc(-8.8, eyeY + 2.4, 5.2, 0.2, Math.PI - 0.2);
       ctx.stroke();
       ctx.beginPath();
-      ctx.arc(10.5, eyeY + 2, 7.2, 0.15, Math.PI - 0.15);
+      ctx.arc(8.8, eyeY + 2.4, 5.2, 0.2, Math.PI - 0.2);
       ctx.stroke();
-      // 睫毛
-      ctx.beginPath();
-      ctx.moveTo(-17, eyeY + 4);
-      ctx.lineTo(-19.5, eyeY + 1);
-      ctx.moveTo(17, eyeY + 4);
-      ctx.lineTo(19.5, eyeY + 1);
-      ctx.stroke();
-    } else {
-      eye(ctx, -10.5, eyeY, 7.8, 8.8, look);
-      eye(ctx, 10.5, eyeY, 7.8, 8.8, look);
-      // 上眼睑（增加可爱度）
-      ctx.strokeStyle = 'rgba(60, 32, 10, 0.55)';
-      ctx.lineWidth = 1.8;
-      ctx.beginPath();
-      ctx.arc(-10.5, eyeY + 1, 8, Math.PI * 1.08, Math.PI * 1.92);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.arc(10.5, eyeY + 1, 8, Math.PI * 1.08, Math.PI * 1.92);
-      ctx.stroke();
-    }
-    // 眉毛
-    ctx.strokeStyle = '#4a2a10';
-    ctx.lineWidth = 2.2;
-    ctx.lineCap = 'round';
-    ctx.beginPath();
-    if (panic) {
-      ctx.moveTo(-18, eyeY - 15); ctx.lineTo(-6, eyeY - 11);
-      ctx.moveTo(18, eyeY - 15); ctx.lineTo(6, eyeY - 11);
+    } else if (panic) {
+      drawEye(-9.2, eyeY, 6.3, 7.3, 3.1);
+      drawEye(9.2, eyeY, 6.3, 7.3, 3.1);
     } else if (low) {
-      ctx.moveTo(-17, eyeY - 11); ctx.lineTo(-5, eyeY - 14);
-      ctx.moveTo(17, eyeY - 11); ctx.lineTo(5, eyeY - 14);
+      drawEye(-8.8, eyeY, 5.2, 5.9, 2.7);
+      drawEye(8.8, eyeY, 5.2, 5.9, 2.7);
+      // 半垂眼皮
+      ctx.strokeStyle = '#3a210c';
+      ctx.lineWidth = 2;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(-13.6, eyeY - 1.8);
+      ctx.quadraticCurveTo(-8.8, eyeY - 0.2, -4, eyeY - 1.8);
+      ctx.moveTo(13.6, eyeY - 1.8);
+      ctx.quadraticCurveTo(8.8, eyeY - 0.2, 4, eyeY - 1.8);
+      ctx.stroke();
     } else {
-      ctx.moveTo(-17, eyeY - 14);
-      ctx.quadraticCurveTo(-10, eyeY - 17, -4, eyeY - 15);
-      ctx.moveTo(17, eyeY - 14);
-      ctx.quadraticCurveTo(10, eyeY - 17, 4, eyeY - 15);
+      drawEye(-8.8, eyeY, 5.6, 6.4, 2.9);
+      drawEye(8.8, eyeY, 5.6, 6.4, 2.9);
     }
-    ctx.stroke();
+
+    // 受伤/惊慌时才有眉毛，正常状态保持干净
+    ctx.strokeStyle = '#3a210c';
+    ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
+    if (panic) {
+      ctx.beginPath();
+      ctx.moveTo(-14, eyeY - 12);
+      ctx.quadraticCurveTo(-9, eyeY - 15, -4.5, eyeY - 12.5);
+      ctx.moveTo(14, eyeY - 12);
+      ctx.quadraticCurveTo(9, eyeY - 15, 4.5, eyeY - 12.5);
+      ctx.stroke();
+    } else if (low) {
+      ctx.beginPath();
+      ctx.moveTo(-13.5, eyeY - 9.5);
+      ctx.quadraticCurveTo(-9, eyeY - 12.5, -4.5, eyeY - 11);
+      ctx.moveTo(13.5, eyeY - 9.5);
+      ctx.quadraticCurveTo(9, eyeY - 12.5, 4.5, eyeY - 11);
+      ctx.stroke();
+    }
 
     // 腮红
-    ctx.fillStyle = 'rgba(232, 126, 86, 0.42)';
-    ctx.beginPath(); ctx.ellipse(-18, 7, 5.4, 3.2, -0.15, 0, TAU); ctx.fill();
-    ctx.beginPath(); ctx.ellipse(18, 7, 5.4, 3.2, 0.15, 0, TAU); ctx.fill();
+    if (!panic) {
+      ctx.fillStyle = 'rgba(236, 132, 92, 0.32)';
+      ctx.beginPath(); ctx.ellipse(-14.5, 8.5, 4.4, 2.4, -0.12, 0, TAU); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(14.5, 8.5, 4.4, 2.4, 0.12, 0, TAU); ctx.fill();
+    }
 
     // 嘴巴
-    ctx.strokeStyle = '#3d2109';
-    ctx.lineWidth = 2.4;
-    ctx.beginPath();
     if (panic) {
-      ctx.ellipse(0, 11, 4.6, 5.6, 0, 0, TAU);
-    } else if (low) {
-      ctx.moveTo(-7, 12);
-      ctx.quadraticCurveTo(0, 7.5, 7, 12);
-    } else {
-      ctx.moveTo(-7.5, 8.5);
-      ctx.quadraticCurveTo(0, 16.5, 7.5, 8.5);
-    }
-    ctx.stroke();
-    if (!low) {
-      // 小舌头
       ctx.beginPath();
-      ctx.ellipse(0, 13.6, 3.1, 2.2, 0, 0, Math.PI);
-      ctx.fillStyle = 'rgba(232, 120, 100, 0.85)';
+      ctx.ellipse(0, 11.5, 3.4, 4.4, 0, 0, TAU);
+      ctx.fillStyle = '#33200f';
       ctx.fill();
+    } else if (low) {
+      ctx.beginPath();
+      ctx.moveTo(-5.4, 11.6);
+      ctx.quadraticCurveTo(-2.7, 9.4, 0, 11.4);
+      ctx.quadraticCurveTo(2.7, 13.4, 5.4, 11);
+      ctx.strokeStyle = '#2f1a08';
+      ctx.lineWidth = 2.2;
+      ctx.stroke();
+    } else {
+      // 干净的细线微笑
+      ctx.beginPath();
+      ctx.moveTo(-5.2, 7.2);
+      ctx.quadraticCurveTo(0, 12.6, 5.2, 7.2);
+      ctx.strokeStyle = '#33200f';
+      ctx.lineWidth = 2.3;
+      ctx.lineCap = 'round';
+      ctx.stroke();
     }
-    // 高光
+
+    // 花盘高光
     ctx.beginPath();
-    ctx.ellipse(-12, -14, 5.4, 2.8, -0.45, 0, TAU);
-    ctx.fillStyle = 'rgba(255, 226, 150, 0.35)';
+    ctx.ellipse(-12, -13.5, 5, 2.6, -0.45, 0, TAU);
+    ctx.fillStyle = 'rgba(255, 226, 150, 0.22)';
     ctx.fill();
 
     // 掉血时飘落的花粉
