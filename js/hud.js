@@ -61,23 +61,17 @@
   function panel(ctx, x, y, w, h, opts) {
     opts = opts || {};
     ctx.save();
-    ctx.shadowColor = 'rgba(0,0,0,0.45)';
-    ctx.shadowBlur = 24;
-    ctx.shadowOffsetY = 10;
-    const g = ctx.createLinearGradient(0, y, 0, y + h);
-    g.addColorStop(0, opts.top || '#3f2d18');
-    g.addColorStop(1, opts.bottom || '#2a1d0f');
-    ctx.fillStyle = g;
+    // 硬投影
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+    rr(ctx, x, y + 7, w, h, 22);
+    ctx.fill();
+    // 扁平牌面
+    ctx.fillStyle = opts.fill || opts.top || '#4a341c';
     rr(ctx, x, y, w, h, 22);
     ctx.fill();
-    ctx.shadowColor = 'transparent';
-    ctx.strokeStyle = opts.border || '#b98a4b';
+    ctx.strokeStyle = opts.border || '#8a6a3f';
     ctx.lineWidth = 4;
     rr(ctx, x + 2, y + 2, w - 4, h - 4, 20);
-    ctx.stroke();
-    ctx.strokeStyle = 'rgba(255, 230, 160, 0.18)';
-    ctx.lineWidth = 2;
-    rr(ctx, x + 9, y + 9, w - 18, h - 18, 15);
     ctx.stroke();
     ctx.restore();
   }
@@ -85,33 +79,24 @@
   function button(ctx, rect, label, opts) {
     opts = opts || {};
     const hover = opts.hover;
+    let fill = '#75552f';
+    if (opts.variant === 'green') fill = hover ? '#8fd14f' : '#79bd47';
+    else if (opts.variant === 'red') fill = hover ? '#e36049' : '#c74b36';
+    else fill = hover ? '#8a6a3f' : '#75552f';
+    const radius = opts.radius || 16;
     ctx.save();
-    const g = ctx.createLinearGradient(0, rect.y, 0, rect.y + rect.h);
-    if (opts.variant === 'green') {
-      g.addColorStop(0, hover ? '#8fd14f' : '#79bd47');
-      g.addColorStop(1, hover ? '#5f9e33' : '#4f8a2a');
-    } else if (opts.variant === 'red') {
-      g.addColorStop(0, hover ? '#e36049' : '#c74b36');
-      g.addColorStop(1, hover ? '#b83c2a' : '#9c3222');
-    } else {
-      g.addColorStop(0, hover ? '#8a6a3f' : '#75552f');
-      g.addColorStop(1, hover ? '#6a4d2a' : '#57401f');
-    }
-    ctx.save();
-    ctx.shadowColor = 'rgba(0, 0, 0, 0.35)';
-    ctx.shadowBlur = 14;
-    ctx.shadowOffsetY = 6;
-    ctx.fillStyle = g;
-    rr(ctx, rect.x, rect.y, rect.w, rect.h, opts.radius || 16);
+    // 硬投影
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+    rr(ctx, rect.x, rect.y + 6, rect.w, rect.h, radius);
     ctx.fill();
-    ctx.restore();
-    ctx.strokeStyle = 'rgba(255, 240, 200, 0.55)';
-    ctx.lineWidth = 2.5;
-    rr(ctx, rect.x + 1.5, rect.y + 1.5, rect.w - 3, rect.h - 3, opts.radius || 16);
+    // 扁平按钮
+    ctx.fillStyle = fill;
+    rr(ctx, rect.x, rect.y, rect.w, rect.h, radius);
+    ctx.fill();
+    ctx.strokeStyle = '#2f2414';
+    ctx.lineWidth = 3;
+    rr(ctx, rect.x + 1.5, rect.y + 1.5, rect.w - 3, rect.h - 3, radius - 1);
     ctx.stroke();
-    ctx.fillStyle = 'rgba(255,255,255,0.18)';
-    rr(ctx, rect.x + 6, rect.y + 6, rect.w - 12, rect.h * 0.36, 10);
-    ctx.fill();
     text(ctx, label, rect.x + rect.w / 2, rect.y + rect.h / 2 + 1, opts.fontSize || 24, '#fffdf3', {
       weight: 700,
       outlineWidth: 4
@@ -124,10 +109,7 @@
   function drawSunCounter(ctx, game) {
     const s = L.sunCounter;
     ctx.save();
-    const g = ctx.createLinearGradient(0, s.y, 0, s.y + s.h);
-    g.addColorStop(0, '#f6e6b8');
-    g.addColorStop(1, '#e3cd8d');
-    ctx.fillStyle = g;
+    ctx.fillStyle = '#f2dfa8';
     rr(ctx, s.x, s.y, s.w, s.h, 14);
     ctx.fill();
     ctx.strokeStyle = '#8a6a3a';
@@ -181,36 +163,18 @@
       ctx.save();
       ctx.translate(0, yOff);
 
-      // 卡底（带柔和投影，和草坪拉开层次）
-      if (!hy && !selected) {
-        ctx.save();
-        ctx.shadowColor = 'rgba(20, 14, 6, 0.35)';
-        ctx.shadowBlur = 8;
-        ctx.shadowOffsetY = 3;
-        ctx.fillStyle = 'rgba(70, 52, 28, 1)';
-        rr(ctx, r.x, r.y, r.w, r.h, 10);
-        ctx.fill();
-        ctx.restore();
-      }
-      const g = ctx.createLinearGradient(0, r.y, 0, r.y + r.h);
-      g.addColorStop(0, selected ? '#fff6d8' : '#f7ecc9');
-      g.addColorStop(1, '#e6d3a0');
-      ctx.fillStyle = g;
+      // 硬投影
+      ctx.fillStyle = 'rgba(40, 28, 12, 0.38)';
+      rr(ctx, r.x, r.y + 4, r.w, r.h, 10);
+      ctx.fill();
+      // 扁平卡底
+      ctx.fillStyle = selected ? '#fff0c4' : '#f2e2b8';
       rr(ctx, r.x, r.y, r.w, r.h, 10);
       ctx.fill();
-      ctx.strokeStyle = selected ? '#ffd83d' : '#7d6136';
-      ctx.lineWidth = selected ? 4 : 2.5;
+      ctx.strokeStyle = selected ? '#e8a20c' : '#7d6136';
+      ctx.lineWidth = selected ? 4 : 3;
       rr(ctx, r.x + 1, r.y + 1, r.w - 2, r.h - 2, 9);
       ctx.stroke();
-      if (selected) {
-        ctx.shadowColor = 'rgba(255, 216, 61, 0.9)';
-        ctx.shadowBlur = 16;
-        ctx.strokeStyle = 'rgba(255, 240, 160, 0.9)';
-        ctx.lineWidth = 1.5;
-        rr(ctx, r.x + 1, r.y + 1, r.w - 2, r.h - 2, 9);
-        ctx.stroke();
-        ctx.shadowColor = 'transparent';
-      }
 
       // 植物小像（缓存位图，避免每帧重绘 7 个角色）
       ctx.save();
@@ -292,11 +256,15 @@
     rr(ctx, sh.x + 1, sh.y + 1, sh.w - 2, sh.h - 2, 11);
     ctx.stroke();
     ctx.save();
-    ctx.translate(sh.x + sh.w / 2, sh.y + sh.h / 2 - 2);
-    ctx.scale(0.95, 0.95);
+    ctx.translate(sh.x + sh.w / 2, sh.y + sh.h / 2 - 6);
+    ctx.scale(0.82, 0.82);
     window.ART.drawShovel(ctx, { t: game.time, size: 1 });
     ctx.restore();
-    text(ctx, '铲子', sh.x + sh.w / 2, sh.y + sh.h - 12, 12, '#5a4220', { weight: 700, outline: false });
+    text(ctx, '铲子', sh.x + sh.w / 2, sh.y + sh.h - 11, 13, '#3e2a12', {
+      weight: 800,
+      outlineColor: 'rgba(255, 246, 214, 0.75)',
+      outlineWidth: 2.5
+    });
     ctx.restore();
   }
 
@@ -321,11 +289,7 @@
     ctx.fillStyle = 'rgba(0,0,0,0.4)';
     rr(ctx, inner.x, inner.y, inner.w, inner.h, 8);
     ctx.fill();
-    const g = ctx.createLinearGradient(inner.x, 0, inner.x + inner.w, 0);
-    g.addColorStop(0, '#f0c24b');
-    g.addColorStop(0.6, '#e2703a');
-    g.addColorStop(1, '#b8342a');
-    ctx.fillStyle = g;
+    ctx.fillStyle = '#e2703a';
     if (progress > 0.002) {
       rr(ctx, inner.x, inner.y, Math.max(8, inner.w * Math.min(1, progress)), inner.h, 8);
       ctx.fill();
@@ -470,11 +434,7 @@
     window.ART.drawBackground(ctx, L, t, 'day');
     // 压暗
     ctx.save();
-    const g = ctx.createLinearGradient(0, 0, 0, L.H);
-    g.addColorStop(0, 'rgba(20, 30, 12, 0.35)');
-    g.addColorStop(0.55, 'rgba(20, 30, 12, 0.15)');
-    g.addColorStop(1, 'rgba(16, 22, 8, 0.55)');
-    ctx.fillStyle = g;
+    ctx.fillStyle = 'rgba(18, 26, 10, 0.28)';
     ctx.fillRect(0, 0, L.W, L.H);
     ctx.restore();
 
@@ -506,35 +466,13 @@
     ctx.translate(L.W / 2, 190);
     ctx.rotate(sway);
     panel(ctx, -330, -96, 660, 190, { top: '#4a341c', bottom: '#2c1f10', border: '#d5a45e' });
-    // 木纹
+    // 标题后的简单色块底纹
     ctx.save();
-    ctx.beginPath();
+    ctx.fillStyle = 'rgba(120, 170, 70, 0.12)';
     rr(ctx, -326, -92, 652, 182, 20);
-    ctx.clip();
-    for (let i = 0; i < 5; i++) {
-      const yy = -76 + i * 38;
-      ctx.beginPath();
-      ctx.moveTo(-330, yy);
-      ctx.bezierCurveTo(-120, yy + 5, 120, yy - 5, 330, yy);
-      ctx.strokeStyle = 'rgba(20, 12, 4, 0.22)';
-      ctx.lineWidth = 2;
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.moveTo(-330, yy + 3);
-      ctx.bezierCurveTo(-120, yy + 8, 120, yy - 2, 330, yy + 3);
-      ctx.strokeStyle = 'rgba(255, 220, 150, 0.07)';
-      ctx.lineWidth = 1.4;
-      ctx.stroke();
-    }
-    // 标题后的暖光
-    const glow = ctx.createRadialGradient(0, -18, 30, 0, -18, 300);
-    glow.addColorStop(0, 'rgba(190, 240, 120, 0.16)');
-    glow.addColorStop(0.55, 'rgba(190, 240, 120, 0.05)');
-    glow.addColorStop(1, 'rgba(190, 240, 120, 0)');
-    ctx.fillStyle = glow;
-    ctx.fillRect(-330, -96, 660, 190);
-    // 角落藤叶
-    [[-306, -74, -0.55, 1], [306, -74, Math.PI + 0.55, 1], [-306, 70, 0.5, 0.8], [306, 70, Math.PI - 0.5, 0.8]].forEach(([lx, ly, ang, sc]) => {
+    ctx.fill();
+    // 角落简笔叶子
+    [[-306, -74, -0.55, 1], [306, -74, Math.PI + 0.55, 1]].forEach(([lx, ly, ang, sc]) => {
       ctx.save();
       ctx.translate(lx, ly);
       ctx.rotate(ang);
@@ -543,19 +481,10 @@
       ctx.moveTo(0, 0);
       ctx.quadraticCurveTo(13, -11, 30, -2);
       ctx.quadraticCurveTo(13, 9, 0, 0);
-      const lg = ctx.createLinearGradient(0, -10, 30, 6);
-      lg.addColorStop(0, '#6fbf3f');
-      lg.addColorStop(1, '#3f7f22');
-      ctx.fillStyle = lg;
+      ctx.fillStyle = '#5fae3a';
       ctx.fill();
-      ctx.strokeStyle = 'rgba(24, 40, 12, 0.8)';
-      ctx.lineWidth = 1.6;
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.moveTo(3, 0);
-      ctx.lineTo(24, -1);
-      ctx.strokeStyle = 'rgba(30, 60, 15, 0.55)';
-      ctx.lineWidth = 1.2;
+      ctx.strokeStyle = '#2f4d16';
+      ctx.lineWidth = 2.4;
       ctx.stroke();
       ctx.restore();
     });
@@ -570,10 +499,6 @@
       ctx.lineWidth = 2;
       ctx.stroke();
     });
-    const tg = ctx.createLinearGradient(0, -70, 0, 30);
-    tg.addColorStop(0, '#d9f27e');
-    tg.addColorStop(0.55, '#8fd14f');
-    tg.addColorStop(1, '#4f9c31');
     ctx.font = f(74, 900);
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
@@ -581,7 +506,7 @@
     ctx.lineWidth = 14;
     ctx.strokeStyle = '#233d12';
     ctx.strokeText('植物大战僵尸', 0, -18);
-    ctx.fillStyle = tg;
+    ctx.fillStyle = '#8fd14f';
     ctx.fillText('植物大战僵尸', 0, -18);
     text(ctx, '草 坪 保 卫 战', 0, 54, 25, '#f7e3ae', { weight: 700, outlineColor: 'rgba(40, 26, 10, 0.9)', outlineWidth: 5 });
     ctx.restore();

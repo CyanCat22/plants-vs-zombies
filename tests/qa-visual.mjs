@@ -194,7 +194,8 @@ const start = await capture('start');
   check('V9 七张种子卡花费数字齐全', ['50', '100', '50', '175', '200', '150', '25'].every((v) => hasText(b, v)), b.map((x) => x.text));
   check('V10 波次进度条文字存在（准备种植倒计时）', hasText(b, '准备种植') && /准备种植/.test(norm(b.map((x) => x.text).join(''))), b.map((x) => x.text));
   check('V11 底部操作提示完整', hasText(b, '点击阳光收集') && b.some((x) => /数字键|數字键/.test(norm(x.text))) && hasText(b, '选卡'), b.map((x) => x.text));
-  const shovelCrop = ocrCrop(start.file, [872, 26, 948, 122], 4);
+  // 内缩 1px，避开按钮描边对 OCR 的干扰
+  const shovelCrop = ocrCrop(start.file, [873, 27, 947, 121], 4);
   check('V12 铲子按钮文字存在且未被图标遮挡（放大 4x OCR）', hasText(shovelCrop, '铲子'), { crop: shovelCrop.map((x) => x.text), full: b.map((x) => x.text) });
   // 文字不出界：所有 OCR 文本盒都在画布内
   const inside = b.every((x) => x.x >= rect.left - 2 && x.y >= rect.top - 2 && x.x + x.w <= rect.left + rect.width + 2 && x.y + x.h <= rect.top + rect.height + 2);
