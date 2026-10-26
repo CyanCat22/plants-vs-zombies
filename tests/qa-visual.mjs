@@ -23,11 +23,7 @@ const BTN_START = { x: 490, y: 452, w: 300, h: 74 };
 const VIEW = { w: 1440, h: 900 };
 
 /* ---------- Python/PIL 像素采样 ---------- */
-const PY_CANDIDATES = [
-  process.env.QA_PYTHON,
-  '/Users/xyq/.dsh/dsh-runtimes/dsh-primary-runtime/dependencies/python/bin/python3',
-  'python3'
-].filter(Boolean);
+const PY_CANDIDATES = [process.env.QA_PYTHON, 'python3'].filter(Boolean);
 let PYTHON = null;
 for (const p of PY_CANDIDATES) {
   const r = spawnSync(p, ['-c', 'import PIL'], { encoding: 'utf8' });
