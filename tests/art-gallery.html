@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>ART 预览 · 植物大战僵尸</title>
+<style>
+  html, body { margin: 0; background: #1b1a14; }
+  canvas { display: block; }
+</style>
+</head>
+<body>
+<canvas id="c" width="1600" height="1280"></canvas>
+<script src="../js/config.js"></script>
+<script src="../js/art.js"></script>
+<script>
+(function () {
+  'use strict';
+  const c = document.getElementById('c');
+  const ctx = c.getContext('2d');
+  const W = c.width, H = c.height;
+  const t = 1.7;
+
+  function label(str, x, y, size) {
+    ctx.save();
+    ctx.font = '600 ' + (size || 16) + 'px "PingFang SC", "Microsoft YaHei", sans-serif';
+    ctx.fillStyle = '#e8dcc0';
+    ctx.textAlign = 'center';
+    ctx.fillText(str, x, y);
+    ctx.restore();
+  }
+
+  ctx.fillStyle = '#1b1a14';
+  ctx.fillRect(0, 0, W, H);
+
+  // ---- 背景缩略图 ----
+  ctx.save();
+  ctx.translate(20, 20);
+  ctx.scale(0.6, 0.6);
+  ctx.beginPath(); ctx.rect(0, 0, 1280, 720); ctx.clip();
+  ART.drawBackground(ctx, PVZ_CONFIG.LAYOUT, t, 'day');
+  ART.drawTopBar(ctx, PVZ_CONFIG.LAYOUT, t);
+  ctx.restore();
+  label('背景 + 顶栏 (0.6x)', 420, 460);
+
+  // ---- 植物 ----
+  const plants = ['sunflower', 'peashooter', 'wallnut', 'snowpea', 'repeater', 'cherrybomb', 'potatomine'];
+  const states = [
+    { name: 'idle', opts: { hpRatio: 1, state: 'idle', pop: 1 } },
+    { name: '受伤 40%', opts: { hpRatio: 0.4, state: 'idle', pop: 1 } },
+    { name: 'shoot/armed', opts: { hpRatio: 1, state: 'shoot', pop: 1 } }
+  ];
+  ctx.save();
+  ctx.translate(40, 700);
+  plants.forEach((type, i) => {
+    states.forEach((st, j) => {
+      ctx.save();
+      ctx.translate(i * 210 + 105, j * 170);
+      ctx.scale(1.25, 1.25);
+      const o = Object.assign({ t: t + i, scale: 1, flash: 0 }, st.opts);
+      if (type === 'potatomine' && j === 2) o.state = 'armed';
+      ART.drawPlant(ctx, type, o);
+      ctx.restore();
+      if (j === 0) label(type, i * 210 + 105, 700 + 200 * 0 + 0, 0);
+    });
+  });
+  ctx.restore();
+
+  // 植物名字（第一行下方）
+  ctx.save();
+  plants.forEach((type, i) => label(type, 145 + i * 210, 780, 15));
+  ctx.restore();
+
+  // ---- 僵尸 ----
+  const zombies = ['basic', 'cone', 'bucket', 'flag', 'football'];
+  ctx.save();
+  zombies.forEach((type, i) => {
+    ['walk', 'eat', 'die'].forEach((state, j) => {
+      ctx.save();
+      ctx.translate(170 + i * 280, 1080 + j * 0);
+      ctx.scale(1.0, 1.0);
+      ART.drawZombie(ctx, type, {
+        t: t + i,
+        scale: state === 'die' ? 1 : 1,
+        phase: 0.25 + t * 0.2 + i * 0.13,
+        state,
+        hpRatio: state === 'die' ? 0.1 : 1,
+        flash: 0,
+        slow: 0,
+        deathT: state === 'die' ? 0.55 : 0
+      });
+      ctx.restore();
+    });
+    label(type, 170 + i * 280, 1250, 15);
+  });
+  ctx.restore();
+
+  // ---- 道具小件 ----
+  ctx.save();
+  const props = [
+    ['sun', (x, y) => ART.drawSun(ctx, { t, r: 38, glow: 0.8 })],
+    ['pea', (x, y) => ART.drawPea(ctx, { t, kind: 'pea', r: 11 })],
+    ['snow pea', (x, y) => ART.drawPea(ctx, { t, kind: 'snow', r: 11 })],
+    ['mower', (x, y) => ART.drawMower(ctx, { t, active: true, x: 0 })],
+    ['shovel', (x, y) => ART.drawShovel(ctx, { t, size: 1 })],
+    ['bomb .4', (x, y) => ART.drawExplosion(ctx, { t, age: 0.4, r: 80 })],
+    ['splat', (x, y) => ART.drawSplat(ctx, { t, age: 0.3, kind: 'pea' })],
+    ['head', (x, y) => ART.drawZombieHead(ctx, { t })]
+  ];
+  props.forEach(([name, fn], i) => {
+    ctx.save();
+    ctx.translate(130 + i * 180, 520);
+    fn();
+    ctx.restore();
+    label(name, 130 + i * 180, 560, 14);
+  });
+  ctx.restore();
+
+  window.__ready = true;
+})();
+</script>
+</body>
+</html>

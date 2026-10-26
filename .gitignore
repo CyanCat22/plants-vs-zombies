@@ -1,0 +1,11 @@
+# macOS
+.DS_Store
+
+# 依赖与临时文件
+node_modules/
+.build/
+*.log
+
+# 测试运行时生成、可随时重建的截图
+shots/smoke-*.png
+shots/art-gallery-*.png

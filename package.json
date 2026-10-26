@@ -1,0 +1,22 @@
+{
+  "name": "plants-vs-zombies",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "植物大战僵尸 · 草坪保卫战 —— 纯前端 Canvas 塔防游戏，零依赖",
+  "scripts": {
+    "start": "node server.mjs",
+    "dev": "node server.mjs",
+    "check": "node --check js/config.js && node --check js/art.js && node --check js/audio.js && node --check js/game.js && node --check js/hud.js && node --check js/main.js",
+    "test": "node tests/engine-check.mjs && node tests/smoke.mjs",
+    "test:audio": "node tests/audio-check.mjs",
+    "test:art": "node tests/art-analyze.mjs",
+    "test:visual": "node tests/shots.mjs && python3 tests/visual-check.py"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "devDependencies": {
+    "puppeteer-core": "^23.11.1"
+  }
+}
